@@ -14,8 +14,9 @@ public class EdgesUnit {
     public static int IDnum = 0;
 
     public final ArrayList<Edge> sampledEdges = new ArrayList<Edge>();
-    public final ArrayList<Integer> sampledNodes = new ArrayList<Integer>();
     public final ArrayList<ArrayList<Edge>> sampledPOLT = new ArrayList<ArrayList<Edge>>();
+
+    int countTriangles = 0;
 
     private class Edge {
         private int ID;
@@ -49,7 +50,7 @@ public class EdgesUnit {
         eun.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-BerkStan.txt");
         Date finish = new Date();
 
-        eun.showEstimateResults(); 
+        eun.showEstimateResults();
 
         System.out.println("Calculation time " + (finish.getTime() - start.getTime()) + "ms." );
     }
@@ -63,9 +64,9 @@ public class EdgesUnit {
             while (bf.ready()) {
                 String edgeInFile = bf.readLine();
 
-                if (++lineCount < 0) continue;
+                if (++lineCount % 10000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 2500) {
+                if (lineCount > 200000 ) {
                     bf.close();
                     break;
                 }
@@ -81,22 +82,39 @@ public class EdgesUnit {
     }
 
     public void showEstimateResults() {
-        int estNodes = (int) ((1/((p+q)/2)) * sampledNodes.size());
 
+        System.out.println();
 
-        double estEdges = 0;
+        int estEdges = 0;
         for (Edge e: sampledEdges) {
-            estEdges += 1.0 / e.probabilitySample;
+            estEdges += 1/e.probabilitySample;
         }
         estEdges = Math.round(estEdges);
 
-        System.out.println("Number of edges " + sampledEdges.size() + ", number of nodes " + sampledNodes.size() + ".");
-        System.out.println("Estimated number of edges " + estEdges + ", number of nodes " + estNodes + ".");
+        System.out.println("Number of sampled edges is " + sampledEdges.size() + ".");
+        System.out.println("Estimated number of edges " + estEdges + ".");
 
-        int numOfWedges = countPathOfLengthTwo();
-        System.out.println("Estimated number of wedges " + numOfWedges + ".");
+        int countWedges = countPathOfLengthTwo();
+        System.out.println("Number of sampled wedges is " + countWedges + ".");
 
-        showSampledEdges();
+        long estimateWedges = 0;
+        for (int i = 0; i < countWedges; i++) {
+            estimateWedges += (1/p) * (1/q);
+        }
+
+        System.out.println("Estimated estimation of wedges is " + estimateWedges + ".");
+
+        System.out.println("Number of sampled triangles is " + countTriangles + ".");
+
+        int estimateTriangles = 0;
+        for (int i = 0; i < countTriangles; i++) {
+            estimateTriangles += (1/p) * (1/q) * 1;
+        }
+
+        System.out.println("Estimated number of triangles is " + estimateTriangles + ".");
+
+
+/*        showSampledEdges(); */
     }
 
     public void sampleEdges(String fileString) {
@@ -107,7 +125,9 @@ public class EdgesUnit {
 
         double probabilityOfSampling = findAdjacency(startingPoint, finalPoint);
 
-        sampledEdges.add(new Edge(startingPoint, finalPoint, probabilityOfSampling));
+        if (Math.random() <= probabilityOfSampling) {
+            sampledEdges.add(new Edge(startingPoint, finalPoint, probabilityOfSampling));
+        }
     }
 
     public double findAdjacency(int startingPoint, int finalPoint) {
@@ -148,9 +168,10 @@ public class EdgesUnit {
                 freeVertexB = e.startingPoint;
             }
 
-            for (Edge thirdEdge: sampledEdges) {
+            for (Edge thirdEdge: adjacent) {
                 if ((thirdEdge.startingPoint == freeVertexA && thirdEdge.finalPoint == freeVertexB) ||
                     (thirdEdge.startingPoint == freeVertexB && thirdEdge.finalPoint == freeVertexA)) {
+                    countTriangles++;
                     return 1;
                 }
             }
@@ -167,7 +188,7 @@ public class EdgesUnit {
         }
     }
 
-    public void countTriangles() {
+/*    public void countTriangles() {
         int haveTriangles = 0;
 
         for (Edge e: sampledEdges) {
@@ -193,26 +214,28 @@ public class EdgesUnit {
 
         haveTriangles /= 3;
         System.out.println("Estimated number of triangles " + haveTriangles + ".");
-    }
+    } */
 
     public int countPathOfLengthTwo() {
         int numOfWedges = 0;
 
         for (Edge firstEdge: sampledEdges) {
             for (Edge secondEdge: sampledEdges) {
-                if (!firstEdge.equals(secondEdge)) {
+                if (firstEdge.ID < secondEdge.ID) {
                     if (isPathOfLengthTwo(firstEdge, secondEdge)) {
+/*
                         ArrayList<Edge> newWedge = new ArrayList<Edge>();
                         newWedge.add(firstEdge);
                         newWedge.add(secondEdge);
                         sampledPOLT.add(newWedge);
+*/
                         numOfWedges++;
                     }
                 }
             }
         }
 
-        return numOfWedges / 2;
+        return numOfWedges;
     }
 
     public int calculateDuplicate(String file) {
