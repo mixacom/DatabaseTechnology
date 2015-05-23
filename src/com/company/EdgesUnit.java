@@ -49,6 +49,8 @@ public class EdgesUnit {
         eun.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-BerkStan.txt");
         Date finish = new Date();
 
+        eun.showEstimateResults(); 
+
         System.out.println("Calculation time " + (finish.getTime() - start.getTime()) + "ms." );
     }
 
@@ -59,59 +61,42 @@ public class EdgesUnit {
             int lineCount = 0;
 
             while (bf.ready()) {
-                String[] edgeInFile = bf.readLine().split("\t") ;
+                String edgeInFile = bf.readLine();
 
                 if (++lineCount < 0) continue;
 
                 if (lineCount > 2500) {
-
                     bf.close();
-
                     break;
                 }
 
-                int startingPoint = Integer.parseInt(edgeInFile[0].trim());
-                int finalPoint = Integer.parseInt(edgeInFile[1].trim());
-
-                double probabilityOfSampling = 0;
-
-                if (sampledNodes.contains(startingPoint) || sampledNodes.contains(finalPoint)) {
-                    if (sampledNodes.contains(startingPoint) && sampledNodes.contains(finalPoint)) probabilityOfSampling = 1; // addition for gSHt
-                    else probabilityOfSampling = q; // sample with q
-                }
-                else probabilityOfSampling = p; // sample with p
-
-                if (Math.random() <= probabilityOfSampling) {
-                    sampledEdges.add(new Edge(startingPoint, finalPoint, probabilityOfSampling));
-                    if (!sampledNodes.contains(startingPoint)) sampledNodes.add((startingPoint));
-                    if (!sampledNodes.contains(finalPoint)) sampledNodes.add(finalPoint);
-                }
-
+                sampleEdges(edgeInFile);
             }
-
-            int estNodes = (int) ((1/((p+q)/2)) * sampledNodes.size());
-
-
-            double estEdges = 0;
-            for (Edge e: sampledEdges) {
-                estEdges += 1.0 / e.probabilitySample;
-            }
-            estEdges = Math.round(estEdges);
-
-            System.out.println("Number of edges " + sampledEdges.size() + ", number of nodes " + sampledNodes.size() + ".");
-            System.out.println("Estimated number of edges " + estEdges + ", number of nodes " + estNodes + ".");
-
-            int numOfWedges = countPathOfLengthTwo();
-            System.out.println("Estimated number of wedges " + numOfWedges + ".");
-
-            showSampledEdges();
-
             bf.close();
         }
         catch (Exception e) { }
         finally {
 
         }
+    }
+
+    public void showEstimateResults() {
+        int estNodes = (int) ((1/((p+q)/2)) * sampledNodes.size());
+
+
+        double estEdges = 0;
+        for (Edge e: sampledEdges) {
+            estEdges += 1.0 / e.probabilitySample;
+        }
+        estEdges = Math.round(estEdges);
+
+        System.out.println("Number of edges " + sampledEdges.size() + ", number of nodes " + sampledNodes.size() + ".");
+        System.out.println("Estimated number of edges " + estEdges + ", number of nodes " + estNodes + ".");
+
+        int numOfWedges = countPathOfLengthTwo();
+        System.out.println("Estimated number of wedges " + numOfWedges + ".");
+
+        showSampledEdges();
     }
 
     public void sampleEdges(String fileString) {
