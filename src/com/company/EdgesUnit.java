@@ -113,6 +113,9 @@ public class EdgesUnit {
 
         System.out.println("Estimated number of triangles is " + estimateTriangles + ".");
 
+        double clusterCoefficient = 3.0 * estimateTriangles / estimateWedges;
+        System.out.println("Estimated global cluster coefficient is " + clusterCoefficient + ".");
+
 
 /*        showSampledEdges(); */
     }
