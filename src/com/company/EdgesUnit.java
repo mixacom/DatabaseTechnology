@@ -64,9 +64,9 @@ public class EdgesUnit {
             while (bf.ready()) {
                 String edgeInFile = bf.readLine();
 
-                if (++lineCount % 10000 == 0) System.out.println(lineCount + " " + new Date());
+                if (++lineCount % 500000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 200000 ) {
+                if (lineCount > 10000000) {
                     bf.close();
                     break;
                 }
