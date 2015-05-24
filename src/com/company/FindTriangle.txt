@@ -1,0 +1,100 @@
+package company;
+
+/**
+ *
+ * @author s147441
+ */
+public class FindTriangle {
+    
+    /**
+     * Constructor
+     */
+    FindTriangle(){
+        int [][] testSample = FindTriangle.GetTestSample();
+        for (int i = 0; i < testSample.length; i++){
+            for(int j = 0; j < testSample[i].length; j++){
+                System.out.print(testSample[i][j] + " ");
+            }
+            System.out.println();
+        }
+        int [][] sampledTriangles = FindTriangle.SearchTriangle(testSample);
+        System.out.println("The triangle here is given by " + sampledTriangles[0][0] + " " + sampledTriangles[0][1] + " " + sampledTriangles[0][2]);
+        int [][] graphTriangles = FindTriangle.GetTrianglesFromGraph(testSample);
+        System.out.println("The triangle in the original graph are ");
+        System.out.println(graphTriangles[0][0] + " " + graphTriangles[0][1] + " " + graphTriangles[0][2]);
+        System.out.println(graphTriangles[1][0] + " " + graphTriangles[1][1] + " " + graphTriangles[1][2]);
+        System.out.println(graphTriangles[2][0] + " " + graphTriangles[2][1] + " " + graphTriangles[2][2]);
+        
+        int Nt = sampledTriangles.length;
+        int Ng = graphTriangles.length;
+        int NtRoof = FindTriangle.GetNroof(sampledTriangles);
+        System.out.println("The unbiased estimate of the number of triangles by looking at the sample " + NtRoof);
+        int VarNtRoof = FindTriangle.GetVariance(sampledTriangles);
+        System.out.println("The an unbiased estimate of the Variance of this number is: " + VarNtRoof );
+    }
+    
+    /**
+     * This method returns a test sample to develop my code with
+     * @return 
+     */
+    public static int[][] GetTestSample(){
+        int [][] sample = {{1,2},{2,3},{2,4},{3,4},{2,5}};
+        return sample;
+    }
+    
+    /**
+     * This method should extract all the triangles from a sample
+     * @param matrix
+     * @return 
+     */
+    public static int[][] SearchTriangle(int [][] matrix){
+        int [] [] foundTriangles = {{2,3,4}};
+        /** this is NOT WORKING I hardcoded a solution just to continue
+        int n = 200; // just a value to make it work
+        boolean a = false; // be deafault it will return a "false" if there is no traingle in the set
+        for (int i = 0; i < n; i++){
+            for (int j = i+1; j < n; j++){
+                if (matrix[i][j] == 1) {
+                    for (int k = j+1;k < n;k++) {
+                        if (matrix[i][k] == 1 && matrix[j][k] == 1){
+                            a = true;
+                        }
+                    }
+                }
+            }
+        }
+        return a;
+        **/ 
+        return foundTriangles;
+    }
+    
+    public static int[][] GetTrianglesFromGraph(int[][] matrix){
+        int [][] foundTriangles = {{2,3,4},{4,5,6},{6,7,8}};
+        //this is an exampleset which should actually be derived from the graph where foundTriangles is the actual set of triangles in the graph
+        // i hardcoded this now, because I don't know how to extract them from the graph
+        return foundTriangles;
+    }
+    
+    public static int GetNroof(int [][] matrix){
+        int sum = 0;
+        for (int i = 0; i < matrix.length; i++){
+            sum += 1/EdgesUnit.p;
+            // I have taken p here, since p and q are the same, that is correct right?
+        }
+        return sum;
+    }
+    
+    public static int GetVariance(int[][] Ts, int[][] Tg){
+        int sum = 0;
+        for (int i = 0; i < Ts.length; i++){
+            sum += (1/EdgesUnit.p*((1/EdgesUnit.p)-1));
+            // I have taken p here, since p and q are the same, that is correct right?
+        }
+        for (int j = 0; j < Tg.length; j++){
+            if (Tg[j] == )
+        }
+        return sum;
+        
+        // here I am stuck corrently
+    }
+}

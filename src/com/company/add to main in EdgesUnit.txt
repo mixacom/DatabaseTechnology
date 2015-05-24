@@ -1,0 +1,2 @@
+        FindTriangle triangle;
+        triangle = new FindTriangle();
