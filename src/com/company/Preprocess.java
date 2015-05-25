@@ -36,7 +36,7 @@ public class Preprocess {
         }
 
         public String toString() {
-            return "(" + startingPoint + ", " + finalPoint + ")";
+            return startingPoint + "\t" + finalPoint;
         }
     }
 
@@ -61,7 +61,7 @@ public class Preprocess {
 
                 if (++lineCount % 50000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 10000000) {
+                if (lineCount > 100) {
                     bf.close();
                     break;
                 }

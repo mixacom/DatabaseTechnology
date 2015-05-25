@@ -47,7 +47,7 @@ public class EdgesUnit {
         EdgesUnit eun = new EdgesUnit();
 
         Date start = new Date();
-        eun.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-BerkStan.txt");
+        eun.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\processed files\\Data-BerkStan.txt");
         Date finish = new Date();
 
         eun.showEstimateResults();
