@@ -42,8 +42,8 @@ public class Preprocess {
 
     public static void main(String[] args) {
         Preprocess preprocessInstance = new Preprocess();
-        preprocessInstance.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-BerkStan.txt");
-        preprocessInstance.saveData("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data-BerkStan.txt");
+        preprocessInstance.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-Stanford.txt");
+        preprocessInstance.saveData("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data-Stanford.txt");
 
         System.out.println("Number of unique edges is " + preprocessInstance.uniqueEdges.size());
         System.out.println("Number of duplicate edges is " + preprocessInstance.duplicatesEdges.size());
@@ -61,7 +61,7 @@ public class Preprocess {
 
                 if (++lineCount % 50000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 100) {
+                if (lineCount > 10000000) {
                     bf.close();
                     break;
                 }
