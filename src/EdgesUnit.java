@@ -1,15 +1,11 @@
-package com.company;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class EdgesUnit {
 
-    public final static double p = 0.005;
-    public final static double q = 0.005;
+    private static double p;
+    private static double q;
 
     public static int IDnum = 0;
 
@@ -17,6 +13,14 @@ public class EdgesUnit {
     public final ArrayList<ArrayList<Edge>> sampledPOLT = new ArrayList<ArrayList<Edge>>();
 
     int countTriangles = 0;
+
+    private String readName;
+
+    private static String results;
+
+    public EdgesUnit(String readName) {
+        this.readName = readName;
+    }
 
     private class Edge {
         private int ID;
@@ -42,18 +46,60 @@ public class EdgesUnit {
     }
 
     public static void main(String[] args) {
-	// write your code here
+        // write your code here
 
-        EdgesUnit eun = new EdgesUnit();
+        // path to the file you want to work with
+        String fullPath = "C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/processed files/Data-Stanford.txt";
+
+        // type personal name
+        String yourName = "Mikhail";
+
+        // point correct values
+        p = 0.005;
+        q = 0.008;
+
+        String[] nameComponents = fullPath.split("/");
+        String path = "";
+        String shortPath = "";
+        for (int i = 0; i < nameComponents.length - 1; i++) {
+            path += nameComponents[i] + "/";
+            if (i < nameComponents.length - 2) shortPath += nameComponents[i] + "/";
+            else shortPath += "results/";
+        }
+        String fileWithExtension = nameComponents[nameComponents.length-1];
+        String[] fileWithExtensionArray = fileWithExtension.split("\\.");
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(shortPath + fileWithExtensionArray[0] + " results " + yourName + ".txt")));
+
+            for (int i = 0; i < 30; i++) {
+                int step = i + 1;
+                results = "Information about step " + step + " for " + fileWithExtensionArray[0] + " data set. \r\n\r\n";
+                EdgesUnit eun = new EdgesUnit(fullPath);
+                eun.pickUpFile();
+
+                bw.write(results);
+            }
+
+            bw.write("Calculations are finished. \r\n");
+            bw.write("Thank you " + yourName + " that you run the calculations and help your team to make a wonderful project.");
+
+            bw.close();
+        }
+        catch (IOException e) { }
+    }
+
+    public void pickUpFile() {
 
         Date start = new Date();
-        eun.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\processed files\\Data-BerkStan.txt");
+        readFile(readName);
         Date finish = new Date();
 
-        eun.showEstimateResults();
+        showEstimateResults();
 
         System.out.println("Calculation time " + (finish.getTime() - start.getTime()) + "ms." );
     }
+
 
     public void readFile(String file) {
         try {
@@ -66,7 +112,7 @@ public class EdgesUnit {
 
                 if (++lineCount % 500000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 10000000) {
+                if (lineCount > 10000000 ) {
                     bf.close();
                     break;
                 }
@@ -91,31 +137,30 @@ public class EdgesUnit {
         }
         estEdges = Math.round(estEdges);
 
-        System.out.println("Number of sampled edges is " + sampledEdges.size() + ".");
-        System.out.println("Estimated number of edges " + estEdges + ".");
+        results += "Number of sampled edges is " + sampledEdges.size() + ".\r\n";
+        results += "Estimated number of edges " + estEdges + ".\r\n";
 
         int countWedges = countPathOfLengthTwo();
-        System.out.println("Number of sampled wedges is " + countWedges + ".");
+        results += "Number of sampled wedges is " + countWedges + ".\r\n";
 
         long estimateWedges = 0;
         for (int i = 0; i < countWedges; i++) {
             estimateWedges += (1/p) * (1/q);
         }
 
-        System.out.println("Estimated estimation of wedges is " + estimateWedges + ".");
+        results += "Estimated estimation of wedges is " + estimateWedges + ".\r\n";
 
-        System.out.println("Number of sampled triangles is " + countTriangles + ".");
+        results += "Number of sampled triangles is " + countTriangles + ".\r\n";
 
         int estimateTriangles = 0;
         for (int i = 0; i < countTriangles; i++) {
             estimateTriangles += (1/p) * (1/q) * 1;
         }
 
-        System.out.println("Estimated number of triangles is " + estimateTriangles + ".");
+        results += "Estimated number of triangles is " + estimateTriangles + ".\r\n";
 
         double clusterCoefficient = 3.0 * estimateTriangles / estimateWedges;
-        System.out.println("Estimated global cluster coefficient is " + clusterCoefficient + ".");
-
+        results += "Estimated global cluster coefficient is " + clusterCoefficient + ". \r\n\r\n\r\n";
 
 /*        showSampledEdges(); */
     }

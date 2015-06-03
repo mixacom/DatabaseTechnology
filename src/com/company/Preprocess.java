@@ -119,7 +119,7 @@ public class Preprocess {
 
             bw.close();
         }
-        catch (Exception E) { }
+        catch (Exception e) {e.printStackTrace(); }
         finally {
 
         }
