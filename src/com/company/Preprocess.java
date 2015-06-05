@@ -42,8 +42,8 @@ public class Preprocess {
 
     public static void main(String[] args) {
         Preprocess preprocessInstance = new Preprocess();
-        preprocessInstance.readFile("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\Data-Stanford.txt");
-        preprocessInstance.saveData("C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data-Stanford.txt");
+        preprocessInstance.readFile("C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/original files/roadNet-California.txt");
+        preprocessInstance.saveData("C:/Users/Mikhail/Dropbox/2ID35 Data Tech/facebook_combined.txt");
 
         System.out.println("Number of unique edges is " + preprocessInstance.uniqueEdges.size());
         System.out.println("Number of duplicate edges is " + preprocessInstance.duplicatesEdges.size());

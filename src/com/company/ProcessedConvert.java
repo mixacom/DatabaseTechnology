@@ -9,9 +9,9 @@ import java.util.Date;
 public class ProcessedConvert {
     public static void main(String[] args) {
         try {
-            String fileInput = "C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\processed files\\Data-BerkStan.txt";
+            String fileInput = "C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/processed files/facebook_combined.txt";
 
-            String fileOutput = "C:\\Users\\Mikhail\\Dropbox\\2ID35 Data Tech\\Data\\processed files\\Data-new.txt";
+            String fileOutput = "C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/processed files/facebook_combined.txt";
 
             BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(fileInput)));
 

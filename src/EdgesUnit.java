@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 public class EdgesUnit {
@@ -12,6 +14,8 @@ public class EdgesUnit {
     public final ArrayList<Edge> sampledEdges = new ArrayList<Edge>();
     public final ArrayList<ArrayList<Edge>> sampledPOLT = new ArrayList<ArrayList<Edge>>();
 
+    public final ArrayList<TriangleSimple> sampledTriangles = new ArrayList<TriangleSimple>();
+
     int countTriangles = 0;
 
     private String readName;
@@ -22,7 +26,7 @@ public class EdgesUnit {
         this.readName = readName;
     }
 
-    private class Edge {
+    private class Edge implements Comparable<Edge> {
         private int ID;
         private int startingPoint;
         private int finalPoint;
@@ -35,13 +39,28 @@ public class EdgesUnit {
             probabilitySample = PS;
         }
 
-        public boolean compareTo(Edge anotherEdge) {
-            return (startingPoint == anotherEdge.startingPoint && finalPoint == anotherEdge.finalPoint) ||
-                   (startingPoint == anotherEdge.finalPoint && finalPoint == anotherEdge.startingPoint);
+        public int compareTo(Edge anotherEdge) {
+            if (startingPoint < anotherEdge.startingPoint) return -1;
+            else if (startingPoint > anotherEdge.startingPoint) return 1;
+            else if (finalPoint < anotherEdge.finalPoint) return -1;
+            else if (finalPoint > anotherEdge.finalPoint) return 1;
+            else return 0;
         }
 
         public String toString() {
             return "(" + startingPoint + ", " + finalPoint + ")";
+        }
+    }
+
+    private class TriangleSimple {
+        private int sideA;
+        private int sideB;
+        private int sideC;
+
+        public TriangleSimple(int sA, int sB, int sC) {
+            sideA = sA;
+            sideB = sB;
+            sideC = sC;
         }
     }
 
@@ -72,21 +91,27 @@ public class EdgesUnit {
         try {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(shortPath + fileWithExtensionArray[0] + " results " + yourName + ".txt")));
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 1; i++) {
                 int step = i + 1;
                 results = "Information about step " + step + " for " + fileWithExtensionArray[0] + " data set. \r\n\r\n";
                 EdgesUnit eun = new EdgesUnit(fullPath);
                 eun.pickUpFile();
 
                 bw.write(results);
+
+                double variance =  eun.findVariance();
+                System.out.println(variance);
             }
 
             bw.write("Calculations are finished. \r\n");
             bw.write("Thank you " + yourName + " that you run the calculations and help your team to make a wonderful project.");
 
             bw.close();
+
         }
-        catch (IOException e) { }
+        catch (IOException e) {
+            e.printStackTrace(System.out);
+        }
     }
 
     public void pickUpFile() {
@@ -112,7 +137,7 @@ public class EdgesUnit {
 
                 if (++lineCount % 500000 == 0) System.out.println(lineCount + " " + new Date());
 
-                if (lineCount > 10000000 ) {
+                if (lineCount > 10000000) {
                     bf.close();
                     break;
                 }
@@ -121,7 +146,9 @@ public class EdgesUnit {
             }
             bf.close();
         }
-        catch (Exception e) { }
+        catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
         finally {
 
         }
@@ -171,15 +198,18 @@ public class EdgesUnit {
         int startingPoint = Integer.parseInt(edgeInFile[0].trim());
         int finalPoint = Integer.parseInt(edgeInFile[1].trim());
 
-        double probabilityOfSampling = findAdjacency(startingPoint, finalPoint);
+        Edge arrivedEdge = findAdjacency(startingPoint, finalPoint);
 
-        if (Math.random() <= probabilityOfSampling) {
-            sampledEdges.add(new Edge(startingPoint, finalPoint, probabilityOfSampling));
+        if (Math.random() <= arrivedEdge.probabilitySample) {
+            sampledEdges.add(arrivedEdge);
         }
     }
 
-    public double findAdjacency(int startingPoint, int finalPoint) {
+    public Edge findAdjacency(int startingPoint, int finalPoint) {
         ArrayList<Edge> adjacent = new ArrayList<Edge>();
+
+        Edge edgeToBack = new Edge(startingPoint, finalPoint, 0);
+        boolean isTriangle = false;
 
         for (Edge e: sampledEdges) {
             if (startingPoint == e.startingPoint || startingPoint == e.finalPoint || finalPoint == e.startingPoint || finalPoint == e.finalPoint) {
@@ -219,15 +249,123 @@ public class EdgesUnit {
             for (Edge thirdEdge: adjacent) {
                 if ((thirdEdge.startingPoint == freeVertexA && thirdEdge.finalPoint == freeVertexB) ||
                     (thirdEdge.startingPoint == freeVertexB && thirdEdge.finalPoint == freeVertexA)) {
+
+                    edgeToBack = new Edge(startingPoint, finalPoint, 1);
+
+                    int[] edgesOfTriangle = new int[3];
+                    edgesOfTriangle[0] = edgeToBack.ID;
+                    edgesOfTriangle[1] = e.ID;
+                    edgesOfTriangle[2] = thirdEdge.ID;
+
+                    Arrays.sort(edgesOfTriangle);
+                    sampledTriangles.add(new TriangleSimple(edgesOfTriangle[0], edgesOfTriangle[1], edgesOfTriangle[2]));
+                    isTriangle = true;
+
                     countTriangles++;
-                    return 1;
                 }
             }
 
         }
 
-        if (adjacent.size() > 0) return q;
-        else return p;
+        if (!isTriangle){
+            if (adjacent.size() > 0) edgeToBack = new Edge(startingPoint, finalPoint, q);
+            else edgeToBack = new Edge(startingPoint, finalPoint, p);
+        }
+
+        return edgeToBack;
+    }
+
+    public double findVariance() {
+        int numberOfCopies = 0;
+
+        double sumVariance = 0;
+
+        for (int i = 0; i < sampledTriangles.size(); i++) {
+            TriangleSimple first = sampledTriangles.get(i);
+
+            for (int j = i + 1; j < sampledTriangles.size(); j++) {
+                TriangleSimple second = sampledTriangles.get(j);
+                if (first.sideA == second.sideA || first.sideB == second.sideB || first.sideA == second.sideB) {
+                    int common = 0;
+                    double sampleProbability = 0;
+
+                    if (first.sideA == second.sideA)
+                        common = first.sideA;
+                    if (first.sideB == second.sideB)
+                        common = first.sideB;
+                    if (first.sideC == second.sideC)
+                        common = first.sideC;
+
+                    for (Edge e: sampledEdges) {
+                        if (e.ID == common) {
+                            sampleProbability = e.probabilitySample;
+
+                            break;
+
+                        }
+                    }
+
+                    if (sampleProbability == p)
+                        sumVariance +=  1/((p * q) + (p * q) - sampleProbability) * (1/sampleProbability - 1);
+                    else if (sampleProbability == q)
+                        sumVariance +=  1/((p * q) + (p * q) - sampleProbability) * (1/sampleProbability - 1);
+                    else if (sampleProbability == 1)
+                        sumVariance +=  1/((p * q) + (p * q) - sampleProbability) * (1/sampleProbability - 1);
+
+                    break;
+                }
+            }
+        }
+
+        return sumVariance;
+    }
+
+    public void findRealNumbers(String file) {
+        try {
+
+            BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+
+            Edge arrivedEdge = null;
+
+            while (bf.ready()) {
+                String fileString = bf.readLine();
+                String[] edgeInFile = fileString.split("\t");
+
+                int startingPoint = Integer.parseInt(edgeInFile[0].trim());
+                int finalPoint = Integer.parseInt(edgeInFile[1].trim());
+
+                if (startingPoint < finalPoint) {
+                    arrivedEdge = new Edge(startingPoint, finalPoint, 1);
+                }
+                else {
+                    arrivedEdge = new Edge(finalPoint, startingPoint, 1);
+                }
+
+                sampledEdges.add(arrivedEdge);
+
+             }
+
+            Collections.sort(sampledEdges);
+
+            int idn = 0;
+            for (int i = 0; i < sampledEdges.size(); i++) {
+                Edge n = sampledEdges.get(i);
+                n.ID = idn++;
+                sampledEdges.set(i, n);
+            }
+
+            int numOfWedges = countPathOfLengthTwo();
+            System.out.println(numOfWedges);
+
+
+            System.out.println(sampledEdges.size());
+
+            bf.close();
+
+        }
+        catch (IOException e) {
+            e.printStackTrace(System.out);
+        }
     }
 
     public void showSampledEdges() {
@@ -267,9 +405,14 @@ public class EdgesUnit {
     public int countPathOfLengthTwo() {
         int numOfWedges = 0;
 
-        for (Edge firstEdge: sampledEdges) {
-            for (Edge secondEdge: sampledEdges) {
-                if (firstEdge.ID < secondEdge.ID) {
+        for (int i = 0; i < sampledEdges.size(); i++) {
+            for (int j = i+1; j < sampledEdges.size(); j++) {
+                Edge firstEdge = sampledEdges.get(i);
+                Edge secondEdge = sampledEdges.get(j);
+/*
+                if (firstEdge.ID < secondEdge.ID)
+*/
+                {
                     if (isPathOfLengthTwo(firstEdge, secondEdge)) {
 /*
                         ArrayList<Edge> newWedge = new ArrayList<Edge>();
@@ -278,6 +421,9 @@ public class EdgesUnit {
                         sampledPOLT.add(newWedge);
 */
                         numOfWedges++;
+
+                        if (numOfWedges % 1000000 == 0)
+                            System.out.println(new Date() + ", " + i + ", num of wedges " + numOfWedges + "." );
                     }
                 }
             }
@@ -309,7 +455,7 @@ public class EdgesUnit {
 
                     if (allEdges.size() != 0) {
                         for (Edge e : allEdges) {
-                            if (newEdge.compareTo(e)) {
+                            if (newEdge.compareTo(e) == 0) {
                                 countDuplicates++;
                                 needAdd = false;
                             }
