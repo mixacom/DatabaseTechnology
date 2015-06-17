@@ -12,11 +12,15 @@ public class EdgesUnit {
     public static int IDnum = 0;
 
     public final ArrayList<Edge> sampledEdges = new ArrayList<Edge>();
-    public final ArrayList<ArrayList<Edge>> sampledPOLT = new ArrayList<ArrayList<Edge>>();
+    public final ArrayList<WedgeSimple> sampledPOLT = new ArrayList<WedgeSimple>();
+
+    public ArrayList<Edge> adjacentExternal = new ArrayList<Edge>();
 
     public final ArrayList<TriangleSimple> sampledTriangles = new ArrayList<TriangleSimple>();
 
     int countTriangles = 0;
+
+    int countWedges = 0;
 
     private String readName;
 
@@ -48,7 +52,7 @@ public class EdgesUnit {
         }
 
         public String toString() {
-            return "(" + startingPoint + ", " + finalPoint + ")";
+            return startingPoint + " " + finalPoint;
         }
     }
 
@@ -64,11 +68,21 @@ public class EdgesUnit {
         }
     }
 
+    private class WedgeSimple {
+        private int sideA;
+        private int sideB;
+
+        public WedgeSimple(int sA, int sB) {
+            sideA = sA;
+            sideB = sB;
+        }
+    }
+
     public static void main(String[] args) {
         // write your code here
 
         // path to the file you want to work with
-        String fullPath = "C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/processed files/Data-Stanford.txt";
+        String fullPath = "C:/Users/Mikhail/Dropbox/2ID35 Data Tech/Data/processed files/Data-Google.txt";
 
         // type personal name
         String yourName = "Mikhail";
@@ -91,19 +105,30 @@ public class EdgesUnit {
         try {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(shortPath + fileWithExtensionArray[0] + " results " + yourName + ".txt")));
 
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 5; i++) {
+
+/*                if (i % 2 == 0) p = p + 0.001;
+                else q = q + 0.001;*/
+
                 int step = i + 1;
+
+                results = "";
+
+/*
                 results = "Information about step " + step + " for " + fileWithExtensionArray[0] + " data set. \r\n\r\n";
+*/
+
                 EdgesUnit eun = new EdgesUnit(fullPath);
                 eun.pickUpFile();
 
                 bw.write(results);
+                bw.flush();
 
                 double variance =  eun.findVariance();
                 System.out.println(variance);
             }
 
-            bw.write("Calculations are finished. \r\n");
+            bw.write("\r\n" + "Calculations are finished. \r\n");
             bw.write("Thank you " + yourName + " that you run the calculations and help your team to make a wonderful project.");
 
             bw.close();
@@ -158,36 +183,73 @@ public class EdgesUnit {
 
         System.out.println();
 
+        String formattedString = "";
+
         int estEdges = 0;
         for (Edge e: sampledEdges) {
             estEdges += 1/e.probabilitySample;
         }
         estEdges = Math.round(estEdges);
 
+/*
         results += "Number of sampled edges is " + sampledEdges.size() + ".\r\n";
         results += "Estimated number of edges " + estEdges + ".\r\n";
+*/
 
-        int countWedges = countPathOfLengthTwo();
+        formattedString += p + "\t" + q + "\t";
+
+        formattedString += sampledEdges.size() + "\t";
+        formattedString += estEdges + "\t";
+
+        countWedges = countPathOfLengthTwo();
+/*
         results += "Number of sampled wedges is " + countWedges + ".\r\n";
+*/
+
+        formattedString += countWedges + "\t";
 
         long estimateWedges = 0;
-        for (int i = 0; i < countWedges; i++) {
-            estimateWedges += (1/p) * (1/q);
+        for (int i = 0; i < sampledPOLT.size(); i++) {
+            WedgeSimple wedge = sampledPOLT.get(i);
+            Edge a = sampledEdges.get(wedge.sideA);
+            Edge b = sampledEdges.get(wedge.sideB);
+            estimateWedges += (1/a.probabilitySample) * (1/b.probabilitySample);
         }
 
+/*
         results += "Estimated estimation of wedges is " + estimateWedges + ".\r\n";
+*/
 
+        formattedString += estimateWedges + "\t";
+
+/*
         results += "Number of sampled triangles is " + countTriangles + ".\r\n";
+*/
+
+        formattedString += countTriangles + "\t";
 
         int estimateTriangles = 0;
-        for (int i = 0; i < countTriangles; i++) {
-            estimateTriangles += (1/p) * (1/q) * 1;
+        for (int i = 0; i < sampledTriangles.size(); i++) {
+            TriangleSimple triangle = sampledTriangles.get(i);
+            Edge a = sampledEdges.get(triangle.sideA);
+            Edge b = sampledEdges.get(triangle.sideB);
+            Edge c = sampledEdges.get(triangle.sideC);
+            estimateTriangles += ((1/a.probabilitySample) * (1/b.probabilitySample) * (1/c.probabilitySample) / 2);
         }
 
+/*
         results += "Estimated number of triangles is " + estimateTriangles + ".\r\n";
+*/
+        formattedString += estimateTriangles + "\t";
 
         double clusterCoefficient = 3.0 * estimateTriangles / estimateWedges;
+/*
         results += "Estimated global cluster coefficient is " + clusterCoefficient + ". \r\n\r\n\r\n";
+*/
+
+        formattedString += clusterCoefficient + "\t";
+
+        results += formattedString + "\r\n";
 
 /*        showSampledEdges(); */
     }
@@ -201,23 +263,32 @@ public class EdgesUnit {
         Edge arrivedEdge = findAdjacency(startingPoint, finalPoint);
 
         if (Math.random() <= arrivedEdge.probabilitySample) {
+
+            for (Edge e: adjacentExternal) {
+                sampledPOLT.add(new WedgeSimple(e.ID, arrivedEdge.ID));
+            }
+
             sampledEdges.add(arrivedEdge);
         }
     }
 
     public Edge findAdjacency(int startingPoint, int finalPoint) {
-        ArrayList<Edge> adjacent = new ArrayList<Edge>();
+        ArrayList<Edge> adjacentLocal = new ArrayList<Edge>();
 
         Edge edgeToBack = new Edge(startingPoint, finalPoint, 0);
+        edgeToBack.ID = sampledEdges.size();
+
         boolean isTriangle = false;
 
         for (Edge e: sampledEdges) {
             if (startingPoint == e.startingPoint || startingPoint == e.finalPoint || finalPoint == e.startingPoint || finalPoint == e.finalPoint) {
-                adjacent.add(e);
+                adjacentLocal.add(e);
             }
         }
 
-        for (Edge e: adjacent) {
+        adjacentExternal = adjacentLocal;
+
+        for (Edge e: adjacentLocal) {
             int matchVertex = 0;
             int freeVertexA = 0;
             int freeVertexB = 0;
@@ -246,11 +317,11 @@ public class EdgesUnit {
                 freeVertexB = e.startingPoint;
             }
 
-            for (Edge thirdEdge: adjacent) {
+            for (Edge thirdEdge: adjacentLocal) {
                 if ((thirdEdge.startingPoint == freeVertexA && thirdEdge.finalPoint == freeVertexB) ||
                     (thirdEdge.startingPoint == freeVertexB && thirdEdge.finalPoint == freeVertexA)) {
 
-                    edgeToBack = new Edge(startingPoint, finalPoint, 1);
+                    edgeToBack.probabilitySample = 1;
 
                     int[] edgesOfTriangle = new int[3];
                     edgesOfTriangle[0] = edgeToBack.ID;
@@ -268,8 +339,8 @@ public class EdgesUnit {
         }
 
         if (!isTriangle){
-            if (adjacent.size() > 0) edgeToBack = new Edge(startingPoint, finalPoint, q);
-            else edgeToBack = new Edge(startingPoint, finalPoint, p);
+            if (adjacentLocal.size() > 0) edgeToBack.probabilitySample = q;
+            else edgeToBack.probabilitySample = p;
         }
 
         return edgeToBack;
